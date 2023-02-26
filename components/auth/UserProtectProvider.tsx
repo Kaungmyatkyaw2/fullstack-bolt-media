@@ -1,7 +1,7 @@
 import { insertUser } from "@/store/user_slice/UserSlicer";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import CircularIndeterminate from "../Loader";
 
@@ -13,15 +13,21 @@ const UserProtectProvider = ({ children }: PropType) => {
   const { data, status } = useSession();
   const route = useRouter();
   const dispatch = useDispatch();
-  if (status == "unauthenticated") {
-    route.push("/login");
-  } else {
-    if (data !== null && status == "authenticated") {
-      dispatch(insertUser({...data.user}));
-    }
-  }
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (status === "loading") {
+  useEffect(() => {
+    if (status == "unauthenticated") {
+      setIsLoading(false);
+      route.push("/login");
+    } else {
+      if (data !== null && status == "authenticated") {
+        setIsLoading(false);
+        dispatch(insertUser({ ...data.user }));
+      }
+    }
+  }, [status]);
+
+  if (isLoading) {
     return <CircularIndeterminate />;
   }
 
