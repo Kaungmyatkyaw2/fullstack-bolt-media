@@ -1,6 +1,6 @@
 import { insertUser } from "@/store/user_slice/UserSlicer";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import CircularIndeterminate from "../Loader";
@@ -14,13 +14,16 @@ const UserProtectProvider = ({ children }: PropType) => {
   const route = useRouter();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(true);
+  const path = usePathname();
 
   useEffect(() => {
-    if (status == "unauthenticated") {
+    if (status === "unauthenticated") {
       setIsLoading(false);
-      route.push("/login");
+      if (path !== "/register") {
+        route.push("/login");
+      }
     } else {
-      if (status == "authenticated") {
+      if (status === "authenticated") {
         setIsLoading(false);
         dispatch(insertUser({ ...data.user }));
       }

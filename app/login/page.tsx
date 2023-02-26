@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -13,7 +13,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { signIn, SignInResponse } from "next-auth/react";
+import { signIn, SignInResponse, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import CircularIndeterminate from "@/components/Loader";
 import { CircularProgress } from "@mui/material";
@@ -42,9 +42,8 @@ const theme = createTheme();
 export default function SignIn() {
   const form = React.useRef<HTMLFormElement>(null!);
   const route = useRouter();
+  const { status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -70,7 +69,6 @@ export default function SignIn() {
       setIsLoading(false);
     }
   };
-
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
@@ -99,7 +97,7 @@ export default function SignIn() {
             />
             <button
               disabled={isLoading}
-              // onClick={(e) => handleSubmit(e)}
+              onClick={(e) => handleSubmit(e)}
               className="block w-full py-[10px] rounded-[5px] bg-primary text-white my-[15px] duration-200"
               type="button"
             >

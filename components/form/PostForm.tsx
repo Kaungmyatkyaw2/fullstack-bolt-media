@@ -1,14 +1,14 @@
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { BsX } from "react-icons/bs";
 import { FcImageFile } from "react-icons/fc";
-import { motion } from "framer-motion";
 import profile from "./../../public/profile.svg";
 import { CircularProgress } from "@mui/material";
 import Image from "next/image";
 import useUploadImage from "@/helper/useUploadImage";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { apiInstance } from "@/lib/axios";
+import { insertTweets } from "@/store/post_slice/TweetSlicer";
 
 interface propType {
   onClose: () => void;
@@ -20,6 +20,8 @@ const PostForm = ({ fileMessage, onClose }: propType) => {
   const [load, setLoad] = useState(false);
   const file = useRef<HTMLInputElement>(null!);
   const form = useRef<HTMLFormElement>(null!);
+  const tweet = useSelector((state: RootState) => state.tweet);
+  const dispatch = useDispatch();
   const [previewUrl, setPreviewUrl] = useState<String>();
   const [imageSrc, handleUpload] = useUploadImage();
 
@@ -29,31 +31,46 @@ const PostForm = ({ fileMessage, onClose }: propType) => {
     }
   };
 
+  useEffect(() => {
+    if (imageSrc) {
+      createTweet();
+    }
+  }, [imageSrc]);
+
+  const createTweet = async () => {
+    try {
+      console.log("first");
+      // @ts-ignore
+      const info = {
+        image: imageSrc,
+        // @ts-ignore
+        description: form.current[0].value,
+        user_id: user.id,
+      };
+      const { data } = await apiInstance.post(
+        "tweet/create",
+        JSON.stringify(info)
+      );
+
+      if (data?.isOk) {
+        setLoad(false);
+        dispatch(insertTweets([...tweet,data.data]));
+        onClose();
+      } else {
+        console.log(data);
+      }
+    } catch (error) {
+      console.log(error);
+      setLoad(false);
+    }
+  };
+
   const handlePost = async (e: FormEvent) => {
     e.preventDefault();
     try {
       setLoad(true);
       // @ts-ignore
       await handleUpload(form.current[1].files[0]);
-
-      if (imageSrc) {
-        // @ts-ignore
-        const info = {
-          image: imageSrc,
-          // @ts-ignore
-          description: form.current[0].value,
-          user_id: user.id,
-        };
-        const { data } = await apiInstance.post(
-          "tweet/create",
-          JSON.stringify(info)
-        );
-
-        if (data?.isOk) {
-          setLoad(false);
-          onClose();
-        }
-      }
     } catch (error) {
       console.log(error);
       setLoad(false);
@@ -67,13 +84,7 @@ const PostForm = ({ fileMessage, onClose }: propType) => {
       className=" w-full h-[100vh]"
       action=""
     >
-      <motion.div
-        key="modal"
-        exit={{ scale: 0 }}
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        className="fixed top-0 left-0 w-full h-screen bg-[#212121] bg-opacity-60 z-[999] flex justify-center items-center"
-      >
+      <div className="fixed top-0 left-0 w-full h-screen bg-[#212121] bg-opacity-60 z-[999] flex justify-center items-center">
         <div className="sm:w-[400px] w-full sm:h-auto h-[100vh] bg-black border border-gray-800 shadow-lg rounded-[10px]">
           <div className="border-b border-gray-800 py-[15px] relative">
             <h1 className="text-center font-bold">Create a tweet</h1>
@@ -120,7 +131,7 @@ const PostForm = ({ fileMessage, onClose }: propType) => {
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
     </form>
   );
 };

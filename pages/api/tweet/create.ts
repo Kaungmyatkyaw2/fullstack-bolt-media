@@ -18,6 +18,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           description,
           user_id: +user_id,
         },
+        include: {
+          post_reactions: true,
+          user: true,
+        },
       });
 
       if (createUser) {

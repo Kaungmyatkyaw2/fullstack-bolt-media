@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import profile from "./../public/profile.svg";
 import { RootState } from "@/store/store";
 import Image from "next/image";
@@ -9,6 +9,9 @@ import {
   PowerIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { logout } from "@/store/user_slice/UserSlicer";
 
 interface propType {
   isShow: boolean;
@@ -17,6 +20,18 @@ interface propType {
 
 const Sidebar = ({ isShow, offShow }: propType) => {
   const user = useSelector((state: RootState) => state.user);
+  const dispatch = useDispatch();
+  const route = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      dispatch(logout());
+      route.push("/login");
+    } catch {
+      console.log("ERROR");
+    }
+  };
 
   const sidebarNavigator = [
     {
@@ -67,6 +82,9 @@ const Sidebar = ({ isShow, offShow }: propType) => {
       <div className="py-[20px] space-y-[25px]">
         {sidebarNavigator.map((i, index) => (
           <div
+            onClick={() => {
+              i.name === "Logout" && handleSignOut();
+            }}
             key={index}
             className="w-fit px-[20px] space-x-[10px] flex items-center cursor-pointer"
           >

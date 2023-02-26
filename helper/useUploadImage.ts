@@ -17,7 +17,9 @@ const useUploadImage = () => {
         method: "POST",
         body: formData,
       }
-    ).then((r) => r.json());
+    )
+      .then((r) => r.json())
+      .catch((err) => console.log(err));
 
     setImageSrc(data.secure_url);
   }

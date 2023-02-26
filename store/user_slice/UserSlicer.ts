@@ -6,7 +6,7 @@ interface initialStateType {
   id: number | null;
 }
 
-const initialState = {
+const initialState : initialStateType = {
   user_name: null,
   email: null,
   id: null,
@@ -21,8 +21,12 @@ const UserSlicer = createSlice({
       state.user_name = action.payload.name;
       state.id = action.payload.id;
     },
+    logout : (state) => {
+      state.email = null;
+      state.user_name = null;
+      state.id = null;    }
   },
 });
 
-export const { insertUser } = UserSlicer.actions;
+export const { insertUser,logout } = UserSlicer.actions;
 export default UserSlicer.reducer;

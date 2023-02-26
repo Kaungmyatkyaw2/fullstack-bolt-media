@@ -3,13 +3,44 @@
 import PlusButton from "@/components/btn/PlusButton";
 import PostForm from "@/components/form/PostForm";
 import Sidebar from "@/components/Sidebar";
-import useUploadImage from "@/helper/useUploadImage";
-import React, { FormEvent, useRef, useState } from "react";
+import { apiInstance } from "@/lib/axios";
+import { tweetType } from "@/lib/types";
+import React, { FormEvent, useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import Loader from "@/components/Loader";
+import TweetCard from "@/components/card/TweetCard";
+import { useDispatch, useSelector } from "react-redux";
+import { insertTweets } from "@/store/post_slice/TweetSlicer";
+import { RootState } from "@/store/store";
 
 const page = () => {
-  const [show, setShow] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [showSideBar, setShowSideBar] = useState(false);
+  const tweet = useSelector((state: RootState) => state.tweet);
+  const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    getTweets();
+  }, []);
+
+  const getTweets = async () => {
+    try {
+      const { data } = await apiInstance.get("tweet/gets");
+
+      if (data?.isOk) {
+        dispatch(insertTweets(data.data));
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.log(err);
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -26,15 +57,21 @@ const page = () => {
       />
       <div
         className="fixed right-[20px] bottom-[20px] rounded-full"
-        onClick={() => setShow(true)}
+        onClick={() => setShowForm(true)}
       >
         <PlusButton />
       </div>
-      <div className="w-[80%] ml-[20%] h-[100vh]"></div>
-      {show && (
+      <div className="md:w-[80%] w-full md:ml-[20%] pb-[70px] pt-[70px]">
+        <div className="w-full flex flex-col items-center">
+          {tweet.map((tweet) => (
+            <TweetCard data={tweet} />
+          ))}
+        </div>
+      </div>
+      {showForm && (
         <PostForm
           onClose={() => {
-            setShow(false);
+            setShowForm(false);
           }}
           fileMessage="No file chosen"
         />
