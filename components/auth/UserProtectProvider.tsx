@@ -20,12 +20,12 @@ const UserProtectProvider = ({ children }: PropType) => {
       setIsLoading(false);
       route.push("/login");
     } else {
-      if (data !== null && status == "authenticated") {
+      if (status == "authenticated") {
         setIsLoading(false);
         dispatch(insertUser({ ...data.user }));
       }
     }
-  }, [status]);
+  }, [status, isLoading, data]);
 
   if (isLoading) {
     return <CircularIndeterminate />;

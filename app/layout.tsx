@@ -21,8 +21,7 @@ export default function RootLayout({
         {
           <SessionProvider>
             <Provider store={store}>
-            <UserProtectProvider>{children}</UserProtectProvider>
-
+              <UserProtectProvider>{children}</UserProtectProvider>
             </Provider>
           </SessionProvider>
         }
