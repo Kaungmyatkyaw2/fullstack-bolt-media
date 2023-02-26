@@ -99,7 +99,7 @@ export default function SignIn() {
             />
             <button
               disabled={isLoading}
-              onClick={(e) => handleSubmit(e)}
+              // onClick={(e) => handleSubmit(e)}
               className="block w-full py-[10px] rounded-[5px] bg-primary text-white my-[15px] duration-200"
               type="button"
             >
