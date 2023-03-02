@@ -5,16 +5,18 @@ interface bodyType {
   description: string;
   user_id: string;
   image: string;
+  public_id: string;
+  signature: string;
 }
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { image, description, user_id } = req.body;
+  const { image, description, user_id, public_id, signature } = req.body;
 
   if (req.method === "POST") {
     try {
       const createUser = await prisma.posts.create({
         data: {
-          image,
+          image: image || null,
           description,
           user_id: +user_id,
         },

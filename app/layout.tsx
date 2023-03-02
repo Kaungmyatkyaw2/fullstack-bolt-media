@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import UserProtectProvider from "@/components/auth/UserProtectProvider";
 import { Provider } from "react-redux";
 import store from "@/store/store";
+import { Toaster } from "react-hot-toast";
 export default function RootLayout({
   children,
 }: {
@@ -22,6 +23,7 @@ export default function RootLayout({
           <SessionProvider>
             <Provider store={store}>
               <UserProtectProvider>{children}</UserProtectProvider>
+              <Toaster />
             </Provider>
           </SessionProvider>
         }

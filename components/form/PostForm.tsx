@@ -4,26 +4,28 @@ import { FcImageFile } from "react-icons/fc";
 import profile from "./../../public/profile.svg";
 import { CircularProgress } from "@mui/material";
 import Image from "next/image";
-import useUploadImage from "@/helper/useUploadImage";
+import { storage } from "../../lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { apiInstance } from "@/lib/axios";
 import { insertTweets } from "@/store/post_slice/TweetSlicer";
+import { toast } from "react-hot-toast";
+import { style } from "@/lib/toast";
 
 interface propType {
   onClose: () => void;
   fileMessage: string;
 }
 
-const PostForm = ({ fileMessage, onClose }: propType) => {
+const PostForm = ({ onClose }: propType) => {
   const user = useSelector((state: RootState) => state.user);
   const [load, setLoad] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<String>();
   const file = useRef<HTMLInputElement>(null!);
   const form = useRef<HTMLFormElement>(null!);
   const tweet = useSelector((state: RootState) => state.tweet);
   const dispatch = useDispatch();
-  const [previewUrl, setPreviewUrl] = useState<String>();
-  const [imageSrc, handleUpload] = useUploadImage();
 
   const imgPreview = () => {
     if (file.current.files) {
@@ -31,22 +33,17 @@ const PostForm = ({ fileMessage, onClose }: propType) => {
     }
   };
 
-  useEffect(() => {
-    if (imageSrc) {
-      createTweet();
-    }
-  }, [imageSrc]);
-
-  const createTweet = async () => {
+  const createTweet = async (url: string) => {
     try {
-      console.log("first");
-      // @ts-ignore
-      const info = {
-        image: imageSrc,
+      setLoad(true);
+
+      let info = {
+        image: url,
         // @ts-ignore
-        description: form.current[0].value,
+        description: form.current[1].value,
         user_id: user.id,
       };
+
       const { data } = await apiInstance.post(
         "tweet/create",
         JSON.stringify(info)
@@ -54,10 +51,34 @@ const PostForm = ({ fileMessage, onClose }: propType) => {
 
       if (data?.isOk) {
         setLoad(false);
-        dispatch(insertTweets([...tweet,data.data]));
+        dispatch(insertTweets([...tweet, data.data]));
         onClose();
+        toast.success("Successfully Created");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("An Error Occured", style);
+      setLoad(false);
+    }
+  };
+
+  const uploadImage = async () => {
+    try {
+      setLoad(true);
+      if (file.current.files?.length) {
+        // @ts-ignore
+        const imageRef = ref(storage, `${previewUrl + Date.now()}`);
+        uploadBytes(imageRef, file.current.files[0]).then(() => {
+          getDownloadURL(imageRef)
+            .then((url) => {
+              createTweet(url);
+            })
+            .catch((error) => {
+              console.log(error.message);
+            });
+        });
       } else {
-        console.log(data);
+        createTweet("");
       }
     } catch (error) {
       console.log(error);
@@ -65,35 +86,19 @@ const PostForm = ({ fileMessage, onClose }: propType) => {
     }
   };
 
-  const handlePost = async (e: FormEvent) => {
-    e.preventDefault();
-    try {
-      setLoad(true);
-      // @ts-ignore
-      await handleUpload(form.current[1].files[0]);
-    } catch (error) {
-      console.log(error);
-      setLoad(false);
-    }
-  };
-
   return (
-    <form
-      ref={form}
-      onSubmit={handlePost}
-      className=" w-full h-[100vh]"
-      action=""
-    >
+    <form ref={form} className=" w-full h-[100vh]" action="">
       <div className="fixed top-0 left-0 w-full h-screen bg-[#212121] bg-opacity-60 z-[999] flex justify-center items-center">
         <div className="sm:w-[400px] w-full sm:h-auto h-[100vh] bg-black border border-gray-800 shadow-lg rounded-[10px]">
           <div className="border-b border-gray-800 py-[15px] relative">
             <h1 className="text-center font-bold">Create a tweet</h1>
-            <div
+            <button
+              disabled={load}
               className="absolute top-[50%] right-[5%] translate-y-[-50%] text-[25px] cursor-pointer"
               onClick={() => onClose()}
             >
               <BsX className="text-red-500" />
-            </div>
+            </button>
           </div>
           <div className=" px-[20px] py-[20px] space-y-[20px]">
             <div className="flex items-center space-x-[10px]">
@@ -126,7 +131,12 @@ const PostForm = ({ fileMessage, onClose }: propType) => {
                 </div>
               </div>
             </div>
-            <button className="w-full bg-primary py-[10px] rounded-[5px] text-white font-bold">
+            <button
+              type="button"
+              disabled={load}
+              onClick={() => uploadImage()}
+              className="w-full bg-primary py-[10px] rounded-[5px] text-white font-bold"
+            >
               {load ? <CircularProgress size={"17px"} /> : "Post"}
             </button>
           </div>

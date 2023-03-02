@@ -3,6 +3,7 @@ export interface tweetType {
   image: string | null;
   user_id: number;
   user: userType;
+  id: number;
 }
 
 export interface userType {

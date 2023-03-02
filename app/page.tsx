@@ -12,6 +12,7 @@ import TweetCard from "@/components/card/TweetCard";
 import { useDispatch, useSelector } from "react-redux";
 import { insertTweets } from "@/store/post_slice/TweetSlicer";
 import { RootState } from "@/store/store";
+import { toast } from "react-hot-toast";
 
 const page = () => {
   const [showForm, setShowForm] = useState(false);
@@ -64,7 +65,7 @@ const page = () => {
       <div className="md:w-[80%] w-full md:ml-[20%] pb-[70px] pt-[70px]">
         <div className="w-full flex flex-col items-center">
           {tweet.map((tweet) => (
-            <TweetCard data={tweet} />
+            <TweetCard tweet={tweet} />
           ))}
         </div>
       </div>
