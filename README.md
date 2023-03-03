@@ -1,1 +1,1 @@
-# Bolt Social Media Project with Next.js And Postgresql (prisma for ORM)
+## Bolt Social Media Project with Next.js And Postgresql (prisma for ORM)
