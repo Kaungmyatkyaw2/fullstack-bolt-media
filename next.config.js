@@ -40,7 +40,7 @@ const sentryWebpackPluginOptions = {
   //   urlPrefix, include, ignore
 
   silent: true,
-  authoToken : process.env.NEXT_PUBLIC_SENTRY_AUTH_TOKEN,
+  authoToken : process.env.SENTRY_AUTH_TOKEN,
   // Suppresses all logs
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options.
