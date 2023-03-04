@@ -16,6 +16,8 @@ import { RootState } from "@/store/store";
 import { insertTweets } from "@/store/post_slice/TweetSlicer";
 import { toast } from "react-hot-toast";
 import { style } from "@/lib/toast";
+import { useRouter } from "next/navigation";
+import EditTweetForm from "../form/EditTweetForm";
 
 interface propType {
   tweet: tweetType;
@@ -23,8 +25,9 @@ interface propType {
 
 const TweetCard = ({ tweet }: propType) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
   const [disable, setDisable] = useState(false);
+  const [edit, setEdit] = useState(false);
+  const open = Boolean(anchorEl);
   const dispatch = useDispatch();
   const allTweets = useSelector((state: RootState) => state.tweet);
 
@@ -75,92 +78,101 @@ const TweetCard = ({ tweet }: propType) => {
     }
   };
 
-  console.log(disable);
-
   return (
-    <div className="md:w-[70%] w-[90%] mt-[20px] border border-gray-800 p-[20px] rounded-[10px]">
-      <div className="flex justify-between">
-        <div className="w-fit cursor-pointer text-gray-600 flex items-center mb-[15px] space-x-[10px]">
-          <ShareIcon className="w-5 h-5 fill-gray-600" />
-          <p className="text-[13px] text-gray-600">Share</p>
-        </div>
-        <div>
-          <Button
-            id="basic-button"
-            aria-controls={open ? "basic-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? "true" : undefined}
-            onClick={handleClick}
-          >
-            <BsThreeDotsVertical className="text-[15px] fill-gray-600 cursor-pointer" />
-          </Button>
-          <Menu
-            id="basic-menu"
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            MenuListProps={{
-              "aria-labelledby": "basic-button",
-            }}
-            sx={{
-              "& .MuiPaper-root": {
-                backgroundColor: "#212121",
-              },
-            }}
-          >
-            <MenuItem
-              disabled={disable}
-              sx={{ fontSize: "13px" }}
-              onClick={handleClose}
+    <>
+      <div className="md:w-[70%] w-[90%] mt-[20px] border border-gray-800 p-[20px] rounded-[10px]">
+        <div className="flex justify-between">
+          <div className="w-fit cursor-pointer text-gray-600 flex items-center mb-[15px] space-x-[10px]">
+            <ShareIcon className="w-5 h-5 fill-gray-600" />
+            <p className="text-[13px] text-gray-600">Share</p>
+          </div>
+          <div>
+            <Button
+              id="basic-button"
+              aria-controls={open ? "basic-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+              onClick={handleClick}
             >
-              Edit
-            </MenuItem>
-            <MenuItem
-              disabled={disable}
-              sx={{ fontSize: "13px" }}
-              onClick={handleDelete}
+              <BsThreeDotsVertical className="text-[15px] fill-gray-600 cursor-pointer" />
+            </Button>
+            <Menu
+              id="basic-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              MenuListProps={{
+                "aria-labelledby": "basic-button",
+              }}
+              sx={{
+                "& .MuiPaper-root": {
+                  backgroundColor: "#212121",
+                },
+              }}
             >
-              {disable ? "Deleting" : "Delete"}
-            </MenuItem>
-          </Menu>
+              <MenuItem
+                disabled={disable}
+                sx={{ fontSize: "13px" }}
+                onClick={() => setEdit(open)}
+              >
+                Edit
+              </MenuItem>
+              <MenuItem
+                disabled={disable}
+                sx={{ fontSize: "13px" }}
+                onClick={handleDelete}
+              >
+                {disable ? "Deleting" : "Delete"}
+              </MenuItem>
+            </Menu>
+          </div>
+        </div>
+        <div className="flex space-x-[10px]">
+          <Image
+            src={profile}
+            width={50}
+            height={50}
+            className="rounded-full max-w-[50px] max-h-[50px]"
+            alt="profile"
+          />
+          <div className="pt-[5px] space-y-[3px]">
+            <h1 className="text-[15px] font-bold">{tweet.user.user_name}</h1>
+            <p className="text-white text-[12px]">{tweet.description}</p>
+            {(tweet.image !== null && tweet.image.length) ? (
+              <Image
+                loading="lazy"
+                width={500}
+                height={300}
+                src={tweet.image}
+                className="object-cover pt-[5px] rounded-[10px]"
+                alt=""
+              />
+            ) : (
+              <></>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-between items-end pt-[20px]">
+          <div className="flex items-center space-x-[5px]">
+            <AiOutlineHeart className="text-[16px] fill-primary" />
+            <span className="text-gray-600 text-[16px]">0</span>
+          </div>
+          <div className="flex items-center space-x-[5px]">
+            <ChatBubbleLeftIcon className="w-4 h-4 fill-green-500" />
+            <span className="text-gray-600 text-[16px]">0</span>
+          </div>
         </div>
       </div>
-      <div className="flex space-x-[10px]">
-        <Image
-          src={profile}
-          width={50}
-          height={50}
-          className="rounded-full max-w-[50px] max-h-[50px]"
-          alt="profile"
-        />
-        <div className="pt-[5px] space-y-[3px]">
-          <h1 className="text-[15px] font-bold">{tweet.user.user_name}</h1>
-          <p className="text-white text-[12px]">{tweet.description}</p>
-          {tweet.image !== null ? (
-            <Image
-              loading="lazy"
-              width={500}
-              height={300}
-              src={tweet.image}
-              className="object-cover pt-[5px] rounded-[10px]"
-              alt=""
-            />
-          ) : (
-            <></>
-          )}
-        </div>
-      </div>
-      <div className="flex justify-between items-end pt-[20px]">
-        <div className="flex items-center space-x-[5px]">
-          <AiOutlineHeart className="text-[16px] fill-primary" />
-          <span className="text-gray-600 text-[16px]">0</span>
-        </div>
-        <div className="flex items-center space-x-[5px]">
-          <ChatBubbleLeftIcon className="w-4 h-4 fill-green-500" />
-          <span className="text-gray-600 text-[16px]">0</span>
-        </div>
-      </div>
-    </div>
+      {
+        edit &&
+        <EditTweetForm
+        tweetData={tweet}
+        onClose={() => {
+          setEdit(false);
+        }}
+      />
+      }
+    </>
   );
 };
 
