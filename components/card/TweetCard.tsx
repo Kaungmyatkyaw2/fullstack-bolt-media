@@ -1,9 +1,9 @@
 import { tweetType } from "@/lib/types";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import profile from "../../public/profile.svg";
 import { ShareIcon, ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
-import { AiOutlineHeart } from "react-icons/ai";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
@@ -28,8 +28,14 @@ const TweetCard = ({ tweet }: propType) => {
   const [disable, setDisable] = useState(false);
   const [edit, setEdit] = useState(false);
   const open = Boolean(anchorEl);
+  const [react, setReact] = useState<number[]>([]);
   const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user);
   const allTweets = useSelector((state: RootState) => state.tweet);
+
+  useEffect(() => {
+    setReact(tweet.post_reactions.map((i) => i.user_id));
+  }, [tweet]);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -75,6 +81,53 @@ const TweetCard = ({ tweet }: propType) => {
           toast.error("An Error Occured While Deleting Image");
           console.log(error.message);
         });
+    }
+  };
+
+  const handleReact = async () => {
+    try {
+      const { data } = await apiInstance.post(
+        `tweet/react`,
+        JSON.stringify({ post_id: tweet.id, user_id: user.id })
+      );
+
+      if (data.isOk) {
+        dispatch(
+          insertTweets(
+            allTweets.map((i) => ({
+              ...i,
+              post_reactions: [...i.post_reactions, data.data],
+            }))
+          )
+        );
+        toast.success("Successfully React");
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const handleUnReact = async () => {
+    try {
+      const { data } = await apiInstance.delete(
+        `tweet/unreact?post=${tweet.id}&user=${user.id}`
+      );
+
+      if (data.isOk) {
+        dispatch(
+          insertTweets(
+            allTweets.map((i) => ({
+              ...i,
+              post_reactions: i.post_reactions.filter(
+                (i) => i.user_id !== user.id
+              ),
+            }))
+          )
+        );
+        toast.success("Successfully Removed React");
+      }
+    } catch (e) {
+      console.log(e);
     }
   };
 
@@ -138,7 +191,7 @@ const TweetCard = ({ tweet }: propType) => {
           <div className="pt-[5px] space-y-[3px]">
             <h1 className="text-[15px] font-bold">{tweet.user.user_name}</h1>
             <p className="text-white text-[12px]">{tweet.description}</p>
-            {(tweet.image !== null && tweet.image.length) ? (
+            {tweet.image !== null && tweet.image.length ? (
               <Image
                 loading="lazy"
                 width={500}
@@ -153,9 +206,29 @@ const TweetCard = ({ tweet }: propType) => {
           </div>
         </div>
         <div className="flex justify-between items-end pt-[20px]">
-          <div className="flex items-center space-x-[5px]">
-            <AiOutlineHeart className="text-[16px] fill-primary" />
-            <span className="text-gray-600 text-[16px]">0</span>
+          <div
+            className="flex items-center space-x-[5px] cursor-pointer relative group"
+            onClick={() =>
+              react.includes(user.id || 0) ? handleUnReact() : handleReact()
+            }
+          >
+            {react.includes(user.id || 0) ? (
+              <AiFillHeart className="text-[16px] fill-primary" />
+            ) : (
+              <AiOutlineHeart className="text-[16px] fill-primary" />
+            )}
+            <div className="w-[100px] h-fit bg-[#313638] absolute bottom-0 left-0 translate-y-[100%] translate-x-[-5px] rounded-[5px] hidden group-hover:block">
+              {tweet.post_reactions.map((reaction) => (
+                <p className="text-[12px] px-[10px] py-[10px]">
+                  {reaction.user.user_name.length > 10
+                    ? reaction.user.user_name.slice(0, 10) + '...'
+                    : reaction.user.user_name}
+                </p>
+              ))}
+            </div>
+            <span className="text-gray-600 text-[16px]">
+              {tweet.post_reactions.length}
+            </span>
           </div>
           <div className="flex items-center space-x-[5px]">
             <ChatBubbleLeftIcon className="w-4 h-4 fill-green-500" />
@@ -163,15 +236,14 @@ const TweetCard = ({ tweet }: propType) => {
           </div>
         </div>
       </div>
-      {
-        edit &&
+      {edit && (
         <EditTweetForm
-        tweetData={tweet}
-        onClose={() => {
-          setEdit(false);
-        }}
-      />
-      }
+          tweetData={tweet}
+          onClose={() => {
+            setEdit(false);
+          }}
+        />
+      )}
     </>
   );
 };

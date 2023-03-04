@@ -4,6 +4,13 @@ export interface tweetType {
   user_id: number;
   user: userType;
   id: number;
+  post_reactions: postReactionType[];
+}
+
+export interface postReactionType {
+  post_id: number;
+  user_id: number;
+  user : userType
 }
 
 export interface userType {

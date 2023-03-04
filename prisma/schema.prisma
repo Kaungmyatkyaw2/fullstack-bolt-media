@@ -16,25 +16,24 @@ model user {
   email          String           @unique
   image          String?
   password       Int
-  posts          posts[]
+  posts          tweets[]
   post_reactions post_reactions[]
 }
 
-model posts {
-  id              Int              @id @default(autoincrement())
-  description     String?
-  image           String?
-  image_public_id String?
-  image_signature String?
-  user            user             @relation(fields: [user_id], references: [id])
-  user_id         Int
-  post_reactions  post_reactions[]
+model tweets {
+  id             Int              @id @default(autoincrement())
+  description    String?
+  image          String?
+  user           user             @relation(fields: [user_id], references: [id])
+  user_id        Int
+  post_reactions post_reactions[]
 }
 
 model post_reactions {
-  id      Int   @id @default(autoincrement())
-  user    user  @relation(fields: [user_id], references: [id])
+  user    user   @relation(fields: [user_id], references: [id])
   user_id Int
-  post    posts @relation(fields: [post_id], references: [id])
+  post    tweets @relation(fields: [post_id], references: [id])
   post_id Int
+
+  @@id([user_id, post_id])
 }

@@ -4,9 +4,13 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "GET") {
     try {
-      const tweets = await prisma.posts.findMany({
+      const tweets = await prisma.tweets.findMany({
         include: {
-          post_reactions: true,
+          post_reactions: {
+            include: {
+              user: true,
+            },
+          },
           user: true,
         },
       });

@@ -1,21 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
-
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id }: any = req.query;
+  const { post_id, user_id } = req.body;
 
-
-
-  if (req.method === "DELETE") {
+  if (req.method === "POST") {
     try {
-      const delTweet = await prisma.tweets.delete({
-        where: {
-          id: +id,
+      const createReaction = await prisma.post_reactions.create({
+        data: {
+          post_id: +post_id,
+          user_id: +user_id,
         },
+        include : {
+          user :true
+        }
       });
 
-      if (delTweet) {
-        res.status(200).json({ data: delTweet, isOk: true });
+      if (createReaction) {
+        res.status(200).json({ data: createReaction, isOk: true });
       }
     } catch (error) {
       res.status(400).json({ error, isOk: false, message: error });

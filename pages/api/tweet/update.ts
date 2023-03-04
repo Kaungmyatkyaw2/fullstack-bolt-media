@@ -6,7 +6,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (req.method === "PATCH") {
     try {
-      const updateTweet = await prisma.posts.update({
+      const updateTweet = await prisma.tweets.update({
         data: {
           image: image || null,
           description,
@@ -14,10 +14,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         where: {
           id: +id,
         },
-        include : {
-          post_reactions : true,
-          user : true
-        }
+        include: {
+          post_reactions: {
+            include: {
+              user: true,
+            },
+          },
+          user: true,
+        },
       });
 
       if (updateTweet) {
