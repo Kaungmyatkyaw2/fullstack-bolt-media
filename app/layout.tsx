@@ -20,12 +20,12 @@ export default function RootLayout({
       <head />
       <body>
         {
-          <SessionProvider>
-            <Provider store={store}>
+          <Provider store={store}>
+            <SessionProvider>
               <UserProtectProvider>{children}</UserProtectProvider>
               <Toaster />
-            </Provider>
-          </SessionProvider>
+            </SessionProvider>
+          </Provider>
         }
       </body>
     </html>
