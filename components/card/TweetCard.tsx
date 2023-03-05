@@ -1,6 +1,6 @@
 import { tweetType } from "@/lib/types";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import profile from "../../public/profile.svg";
 import { ShareIcon, ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
@@ -16,8 +16,9 @@ import { RootState } from "@/store/store";
 import { insertTweets } from "@/store/post_slice/TweetSlicer";
 import { toast } from "react-hot-toast";
 import { style } from "@/lib/toast";
-import { useRouter } from "next/navigation";
 import EditTweetForm from "../form/EditTweetForm";
+import { CircularProgress } from "@mui/material";
+import CommentCard from "./CommentCard";
 
 interface propType {
   tweet: tweetType;
@@ -27,6 +28,8 @@ const TweetCard = ({ tweet }: propType) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [disable, setDisable] = useState(false);
   const [edit, setEdit] = useState(false);
+  const [commentLoad, setCommentLoad] = useState(false);
+  const comment = useRef<HTMLTextAreaElement>(null!);
   const open = Boolean(anchorEl);
   const [react, setReact] = useState<number[]>([]);
   const dispatch = useDispatch();
@@ -131,9 +134,41 @@ const TweetCard = ({ tweet }: propType) => {
     }
   };
 
+  const handleComment = async () => {
+    if (comment.current.value && comment.current.value !== null) {
+      try {
+        setCommentLoad(true);
+        const { data } = await apiInstance.post(`comment/create`, {
+          user_id: user.id,
+          post_id: tweet.id,
+          comment: comment.current.value,
+        });
+
+        if (data.isOk) {
+          comment.current.value = "";
+          dispatch(
+            insertTweets(
+              allTweets.map((twe) =>
+                twe.id == tweet.id
+                  ? { ...twe, comments: [...twe.comments, data.data] }
+                  : twe
+              )
+            )
+          );
+          setCommentLoad(false);
+        }
+      } catch (error) {
+        console.log(error);
+        setCommentLoad(false);
+      }
+    } else {
+      toast.error("Your comment is nothing", style);
+    }
+  };
+
   return (
     <>
-      <div className="md:w-[70%] w-[90%] mt-[20px] border border-gray-800 p-[20px] rounded-[10px]">
+      <div className="lg:w-[60%] md:w-[70%] w-[90%] mt-[20px] border border-gray-800 p-[20px] rounded-[10px]">
         <div className="flex justify-between">
           <div className="w-fit cursor-pointer text-gray-600 flex items-center mb-[15px] space-x-[10px]">
             <ShareIcon className="w-5 h-5 fill-gray-600" />
@@ -166,7 +201,10 @@ const TweetCard = ({ tweet }: propType) => {
               <MenuItem
                 disabled={disable}
                 sx={{ fontSize: "13px" }}
-                onClick={() => setEdit(open)}
+                onClick={() => {
+                  setEdit(open);
+                  setAnchorEl(null);
+                }}
               >
                 Edit
               </MenuItem>
@@ -194,8 +232,8 @@ const TweetCard = ({ tweet }: propType) => {
             {tweet.image !== null && tweet.image.length ? (
               <Image
                 loading="lazy"
-                width={500}
-                height={300}
+                width={300}
+                height={200}
                 src={tweet.image}
                 className="object-cover pt-[5px] rounded-[10px]"
                 alt=""
@@ -206,22 +244,23 @@ const TweetCard = ({ tweet }: propType) => {
           </div>
         </div>
         <div className="flex justify-between items-end pt-[20px]">
-          <div
-            className="flex items-center space-x-[5px] cursor-pointer relative group"
-            onClick={() =>
-              react.includes(user.id || 0) ? handleUnReact() : handleReact()
-            }
-          >
+          <div className="flex items-center space-x-[5px] relative group">
             {react.includes(user.id || 0) ? (
-              <AiFillHeart className="text-[16px] fill-primary" />
+              <AiFillHeart
+                className="text-[16px] fill-primary cursor-pointer"
+                onClick={() => handleUnReact()}
+              />
             ) : (
-              <AiOutlineHeart className="text-[16px] fill-primary" />
+              <AiOutlineHeart
+                className="text-[16px] fill-primary cursor-pointer"
+                onClick={() => handleReact()}
+              />
             )}
             <div className="w-[100px] h-fit bg-[#313638] absolute bottom-0 left-0 translate-y-[100%] translate-x-[-5px] rounded-[5px] hidden group-hover:block">
-              {tweet.post_reactions.map((reaction) => (
-                <p className="text-[12px] px-[10px] py-[10px]">
+              {tweet.post_reactions.map((reaction, index) => (
+                <p className="text-[12px] px-[10px] py-[10px]" key={index}>
                   {reaction.user.user_name.length > 10
-                    ? reaction.user.user_name.slice(0, 10) + '...'
+                    ? reaction.user.user_name.slice(0, 10) + "..."
                     : reaction.user.user_name}
                 </p>
               ))}
@@ -232,8 +271,53 @@ const TweetCard = ({ tweet }: propType) => {
           </div>
           <div className="flex items-center space-x-[5px]">
             <ChatBubbleLeftIcon className="w-4 h-4 fill-green-500" />
-            <span className="text-gray-600 text-[16px]">0</span>
+            <span className="text-gray-600 text-[16px]">
+              {tweet.comments.length}
+            </span>
           </div>
+        </div>
+
+        <div className="pl-[50px] py-[20px] pb-[10px]">
+          <label htmlFor="chat" className="sr-only">
+            Your message
+          </label>
+          <div className="flex items-center py-2 rounded-lg dark:bg-gray-700">
+            <div className="pr-[10px] w-full">
+              <textarea
+                id="chat"
+                ref={comment}
+                rows={1}
+                disabled={commentLoad}
+                className="block p-2.5 w-full text-sm bg-slate-900 resize-none outline-none rounded-[5px] bg-opacity-40 text-gray-400"
+                placeholder="Your message..."
+              ></textarea>
+            </div>
+            <button
+              disabled={commentLoad}
+              onClick={() => handleComment()}
+              className="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-slate-900 dark:text-blue-500 dark:hover:bg-gray-600"
+            >
+              {commentLoad ? (
+                <CircularProgress size={20} />
+              ) : (
+                <svg
+                  aria-hidden="true"
+                  className="w-6 h-6 rotate-90"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+                </svg>
+              )}
+              <span className="sr-only">Send message</span>
+            </button>
+          </div>
+        </div>
+        <div className="pl-[50px] space-y-[20px]">
+          {tweet.comments.map((com, index) => (
+            <CommentCard com={com} key={index} />
+          ))}
         </div>
       </div>
       {edit && (

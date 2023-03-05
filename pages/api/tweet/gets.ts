@@ -12,6 +12,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             },
           },
           user: true,
+          comments : {
+            include : {
+              user : true
+            }
+          }
         },
       });
 

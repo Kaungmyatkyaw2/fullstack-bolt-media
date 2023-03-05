@@ -2,33 +2,23 @@ import { prisma } from "@/lib/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { image, description, user_id } = req.body;
+  const { comment, post_id, user_id } = req.body;
 
   if (req.method === "POST") {
     try {
-      const createUser = await prisma.tweets.create({
+      const createComment = await prisma.comments.create({
         data: {
-          image: image || null,
-          description,
+          post_id: +post_id,
           user_id: +user_id,
+          comment,
         },
         include: {
-          post_reactions: {
-            include : {
-               user : true
-            }
-          },
           user: true,
-          comments : {
-            include : {
-              user : true
-            }
-          }
         },
       });
 
-      if (createUser) {
-        res.status(200).json({ data: createUser, isOk: true });
+      if (createComment) {
+        res.status(200).json({ data: createComment, isOk: true });
       }
     } catch (error) {
       res.status(400).json({ error, isOk: false, message: error });

@@ -18,6 +18,7 @@ model user {
   password       Int
   posts          tweets[]
   post_reactions post_reactions[]
+  comments       comments[]
 }
 
 model tweets {
@@ -27,6 +28,7 @@ model tweets {
   user           user             @relation(fields: [user_id], references: [id])
   user_id        Int
   post_reactions post_reactions[]
+  comments       comments[]
 }
 
 model post_reactions {
@@ -36,4 +38,13 @@ model post_reactions {
   post_id Int
 
   @@id([user_id, post_id])
+}
+
+model comments {
+  id      Int    @id @default(autoincrement())
+  user    user   @relation(fields: [user_id], references: [id])
+  user_id Int
+  post    tweets @relation(fields: [post_id], references: [id])
+  post_id Int
+  comment String
 }
