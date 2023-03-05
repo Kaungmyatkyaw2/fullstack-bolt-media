@@ -20,6 +20,7 @@ export interface userType {
 }
 
 export interface commentType {
+  id: number;
   user: userType;
   comment: string;
   user_id: number;

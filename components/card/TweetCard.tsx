@@ -97,10 +97,14 @@ const TweetCard = ({ tweet }: propType) => {
       if (data.isOk) {
         dispatch(
           insertTweets(
-            allTweets.map((i) => ({
-              ...i,
-              post_reactions: [...i.post_reactions, data.data],
-            }))
+            allTweets.map((i) =>
+              i.id === tweet.id
+                ? {
+                    ...i,
+                    post_reactions: [...i.post_reactions, data.data],
+                  }
+                : i
+            )
           )
         );
         toast.success("Successfully React");
