@@ -37,16 +37,24 @@ const Sidebar = ({ isShow, offShow }: propType) => {
     {
       name: "News Feed",
       icon: NewspaperIcon,
+      route: "/",
     },
     {
       name: "My Account",
       icon: UserCircleIcon,
+      route: `/profile?id=${user.id}`,
     },
     {
       name: "Logout",
       icon: PowerIcon,
     },
   ];
+
+  const handleRoute = (route_loc: string) => {
+    route.push(route_loc);
+    offShow();
+  };
+
   return (
     <div
       className={`bg-black h-[100vh] md:w-[20%] w-[100%] fixed top-0 left-0 border-r border-gray-900 z-[999] duration-300 ${
@@ -83,7 +91,9 @@ const Sidebar = ({ isShow, offShow }: propType) => {
         {sidebarNavigator.map((i, index) => (
           <div
             onClick={() => {
-              i.name === "Logout" && handleSignOut();
+              i.name === "Logout"
+                ? handleSignOut()
+                : handleRoute(i.route || "");
             }}
             key={index}
             className="w-fit px-[20px] space-x-[10px] flex items-center cursor-pointer"

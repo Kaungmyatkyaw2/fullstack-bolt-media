@@ -17,6 +17,10 @@ export interface postReactionType {
 export interface userType {
   user_name: string;
   email: string;
+  posts: tweetType[];
+  following: userType[];
+  followedBy: userType[];
+  id:number;
 }
 
 export interface commentType {

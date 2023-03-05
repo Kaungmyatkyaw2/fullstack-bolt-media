@@ -1,9 +1,14 @@
-import { tweetType } from "@/lib/types";
+import { commentType, postReactionType, tweetType } from "@/lib/types";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import profile from "../../public/profile.svg";
 import { ShareIcon, ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import {
+  AiFillHeart,
+  AiOutlineDown,
+  AiOutlineHeart,
+  AiOutlineUp,
+} from "react-icons/ai";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
@@ -19,19 +24,30 @@ import { style } from "@/lib/toast";
 import EditTweetForm from "../form/EditTweetForm";
 import { CircularProgress } from "@mui/material";
 import CommentCard from "./CommentCard";
+import { useRouter } from "next/navigation";
 
 interface propType {
   tweet: tweetType;
+  onCommented?: (data: commentType, id: number) => void;
+  onReacted?: (data: postReactionType, id: number) => void;
+  onUnreacted?: (id: number) => void;
 }
 
-const TweetCard = ({ tweet }: propType) => {
+const TweetCard = ({
+  tweet,
+  onCommented,
+  onReacted,
+  onUnreacted,
+}: propType) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [disable, setDisable] = useState(false);
   const [edit, setEdit] = useState(false);
   const [commentLoad, setCommentLoad] = useState(false);
   const comment = useRef<HTMLTextAreaElement>(null!);
+  const [showComment, setShowComment] = useState(false);
   const open = Boolean(anchorEl);
   const [react, setReact] = useState<number[]>([]);
+  const route = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user);
   const allTweets = useSelector((state: RootState) => state.tweet);
@@ -95,6 +111,9 @@ const TweetCard = ({ tweet }: propType) => {
       );
 
       if (data.isOk) {
+        if (onReacted !== undefined) {
+          onReacted(data.data, tweet.id);
+        }
         dispatch(
           insertTweets(
             allTweets.map((i) =>
@@ -121,6 +140,9 @@ const TweetCard = ({ tweet }: propType) => {
       );
 
       if (data.isOk) {
+        if (onUnreacted !== undefined) {
+          onUnreacted(tweet.id);
+        }
         dispatch(
           insertTweets(
             allTweets.map((i) => ({
@@ -150,6 +172,11 @@ const TweetCard = ({ tweet }: propType) => {
 
         if (data.isOk) {
           comment.current.value = "";
+
+          if (onCommented !== undefined) {
+            onCommented(data.data, tweet.id);
+          }
+
           dispatch(
             insertTweets(
               allTweets.map((twe) =>
@@ -172,7 +199,7 @@ const TweetCard = ({ tweet }: propType) => {
 
   return (
     <>
-      <div className="lg:w-[60%] md:w-[70%] w-[90%] mt-[20px] border border-gray-800 p-[20px] rounded-[10px]">
+      <div className="lg:w-[60%] md:w-[70%] sm:w-[90%] w-full mt-[20px] border border-gray-800 p-[20px] sm:rounded-[10px]">
         <div className="flex justify-between">
           <div className="w-fit cursor-pointer text-gray-600 flex items-center mb-[15px] space-x-[10px]">
             <ShareIcon className="w-5 h-5 fill-gray-600" />
@@ -231,7 +258,12 @@ const TweetCard = ({ tweet }: propType) => {
             alt="profile"
           />
           <div className="pt-[5px] space-y-[3px]">
-            <h1 className="text-[15px] font-bold">{tweet.user.user_name}</h1>
+            <h1
+              className="text-[15px] font-bold cursor-pointer"
+              onClick={() => route.push(`/profile?id=${tweet.user_id}`)}
+            >
+              {tweet.user.user_name}
+            </h1>
             <p className="text-white text-[12px]">{tweet.description}</p>
             {tweet.image !== null && tweet.image.length ? (
               <Image
@@ -281,11 +313,20 @@ const TweetCard = ({ tweet }: propType) => {
           </div>
         </div>
 
-        <div className="pl-[50px] py-[20px] pb-[10px]">
-          <label htmlFor="chat" className="sr-only">
-            Your message
-          </label>
+        <div className="py-[20px] pb-[10px]">
           <div className="flex items-center py-2 rounded-lg dark:bg-gray-700">
+            <div className="w-[50px] flex items-center">
+              <div
+                onClick={() => setShowComment(!showComment)}
+                className="w-[30px] h-[30px] flex justify-center items-center bg-slate-900 rounded-full cursor-pointer"
+              >
+                {showComment ? (
+                  <AiOutlineUp className="text-[13px]" />
+                ) : (
+                  <AiOutlineDown className="text-[13px]" />
+                )}
+              </div>
+            </div>
             <div className="pr-[10px] w-full">
               <textarea
                 id="chat"
@@ -318,10 +359,12 @@ const TweetCard = ({ tweet }: propType) => {
             </button>
           </div>
         </div>
-        <div className="pl-[50px] space-y-[20px]">
-          {tweet.comments.map((com, index) => (
-            <CommentCard com={com} key={index} />
-          ))}
+        <div className="sm:pl-[50px] space-y-[20px]">
+          {showComment
+            ? tweet.comments.map((com, index) => (
+                <CommentCard com={com} key={index} />
+              ))
+            : ""}
         </div>
       </div>
       {edit && (

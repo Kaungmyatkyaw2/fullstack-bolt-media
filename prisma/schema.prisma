@@ -19,6 +19,8 @@ model user {
   posts          tweets[]
   post_reactions post_reactions[]
   comments       comments[]
+  followedBy     user[]           @relation("UserFollows")
+  following      user[]           @relation("UserFollows")
 }
 
 model tweets {
