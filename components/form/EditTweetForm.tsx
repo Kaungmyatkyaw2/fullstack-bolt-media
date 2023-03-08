@@ -35,7 +35,6 @@ const EditTweetForm = ({ onClose, tweetData }: propType) => {
     }
   };
 
-
   const updateTweet = async (url: string) => {
     try {
       const payload = {
@@ -68,7 +67,7 @@ const EditTweetForm = ({ onClose, tweetData }: propType) => {
 
   const handleUpdate = () => {
     setLoad(true);
-    if (file.current.files) {
+    if (file.current.files?.length !== 0 && file.current.files) {
       const imageRef = ref(storage, `${previewUrl + Date.now()}`);
       if (tweetData.image !== null) {
         deleteImage(tweetData.image).then((_) => {
@@ -128,7 +127,7 @@ const EditTweetForm = ({ onClose, tweetData }: propType) => {
               {tweetData.image !== null && tweetData.image.length && (
                 <img
                   src={tweetData.image}
-                  className="w-full h-[200px] mb-[20px]"
+                  className="w-full h-[200px] mb-[20px] object-cover"
                 />
               )}
               <div className="border border-gray-800 py-[10px] px-[10px] shadow-sm rounded-[5px] flex justify-between">

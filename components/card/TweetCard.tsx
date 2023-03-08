@@ -85,7 +85,6 @@ const TweetCard = ({
 
   const handleDelete = async () => {
     setDisable(true);
-    console.log(disable);
     if (tweet.image === null || !tweet.image.length) {
       handleDeleteTweet();
     } else {
@@ -205,49 +204,53 @@ const TweetCard = ({
             <ShareIcon className="w-5 h-5 fill-gray-600" />
             <p className="text-[13px] text-gray-600">Share</p>
           </div>
-          <div>
-            <Button
-              id="basic-button"
-              aria-controls={open ? "basic-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? "true" : undefined}
-              onClick={handleClick}
-            >
-              <BsThreeDotsVertical className="text-[15px] fill-gray-600 cursor-pointer" />
-            </Button>
-            <Menu
-              id="basic-menu"
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleClose}
-              MenuListProps={{
-                "aria-labelledby": "basic-button",
-              }}
-              sx={{
-                "& .MuiPaper-root": {
-                  backgroundColor: "#212121",
-                },
-              }}
-            >
-              <MenuItem
-                disabled={disable}
-                sx={{ fontSize: "13px" }}
-                onClick={() => {
-                  setEdit(open);
-                  setAnchorEl(null);
+          {user.id === tweet.user_id ? (
+            <div>
+              <Button
+                id="basic-button"
+                aria-controls={open ? "basic-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+                onClick={handleClick}
+              >
+                <BsThreeDotsVertical className="text-[15px] fill-gray-600 cursor-pointer" />
+              </Button>
+              <Menu
+                id="basic-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                  "aria-labelledby": "basic-button",
+                }}
+                sx={{
+                  "& .MuiPaper-root": {
+                    backgroundColor: "#212121",
+                  },
                 }}
               >
-                Edit
-              </MenuItem>
-              <MenuItem
-                disabled={disable}
-                sx={{ fontSize: "13px" }}
-                onClick={handleDelete}
-              >
-                {disable ? "Deleting" : "Delete"}
-              </MenuItem>
-            </Menu>
-          </div>
+                <MenuItem
+                  disabled={disable}
+                  sx={{ fontSize: "13px" }}
+                  onClick={() => {
+                    setEdit(open);
+                    setAnchorEl(null);
+                  }}
+                >
+                  Edit
+                </MenuItem>
+                <MenuItem
+                  disabled={disable}
+                  sx={{ fontSize: "13px" }}
+                  onClick={handleDelete}
+                >
+                  {disable ? "Deleting" : "Delete"}
+                </MenuItem>
+              </Menu>
+            </div>
+          ) : (
+            <></>
+          )}
         </div>
         <div className="flex space-x-[10px]">
           <Image

@@ -9,7 +9,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       const followed = await prisma.user.update({
         data: {
           following: {
-            connect: {
+            disconnect: {
               id: +follow_id,
             },
           },
@@ -26,7 +26,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           },
           data: {
             followedBy: {
-              connect: {
+              disconnect: {
                 id: +id,
               },
             },

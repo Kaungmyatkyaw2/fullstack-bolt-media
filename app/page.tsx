@@ -4,7 +4,6 @@ import PlusButton from "@/components/btn/PlusButton";
 import PostForm from "@/components/form/PostForm";
 import Sidebar from "@/components/Sidebar";
 import { apiInstance } from "@/lib/axios";
-import { tweetType } from "@/lib/types";
 import React, { FormEvent, useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Loader from "@/components/Loader";
@@ -12,7 +11,7 @@ import TweetCard from "@/components/card/TweetCard";
 import { useDispatch, useSelector } from "react-redux";
 import { insertTweets } from "@/store/post_slice/TweetSlicer";
 import { RootState } from "@/store/store";
-import { toast } from "react-hot-toast";
+import * as Sentry from "@sentry/nextjs";
 
 const page = () => {
   const [showForm, setShowForm] = useState(false);

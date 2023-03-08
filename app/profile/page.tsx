@@ -10,15 +10,20 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import TweetCard from "@/components/card/TweetCard";
 import { RootState } from "@/store/store";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import FollowButton from "@/components/btn/FollowButton";
+import { CircularProgress } from "@mui/material";
+import { insertUser } from "@/store/user_slice/UserSlicer";
 
 const page = () => {
-  const [info, setInfo] = useState<userType>();
+  const [info, setInfo] = useState<userType>({} as userType);
   const [load, setLoad] = useState(true);
+  const [followLoad, setFollowLoad] = useState(false);
   const params = useSearchParams();
   const user_id = params.get("id");
   const user = useSelector((state: RootState) => state.user);
   const [showSideBar, setShowSideBar] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (user_id) {
@@ -78,6 +83,66 @@ const page = () => {
     });
   };
 
+  const onFollow = async () => {
+    try {
+      setFollowLoad(true);
+      const { data } = await apiInstance.patch(
+        `account/follow?id=${user.id}`,
+        JSON.stringify({ follow_id: info?.id })
+      );
+
+      if (data.isOk) {
+        setFollowLoad(false);
+        dispatch(
+          insertUser({
+            ...user,
+            following: [
+              ...user.following,
+              {
+                email: info.email,
+                id: info.id,
+                image: "",
+                password: "",
+                user_name: info.user_name,
+              },
+            ],
+          })
+        );
+        setInfo({ ...info, followedBy: [...info.followedBy, data.data] });
+      }
+    } catch (err) {
+      setFollowLoad(false);
+      console.log(err);
+    }
+  };
+
+  const onUnfollow = async () => {
+    try {
+      setFollowLoad(true);
+      const { data } = await apiInstance.patch(
+        `account/unfollow?id=${user.id}`,
+        JSON.stringify({ follow_id: info?.id })
+      );
+
+      if (data.isOk) {
+        setFollowLoad(false);
+        dispatch(
+          insertUser({
+            ...user,
+            following: user.following.filter((i) => i.id !== info.id),
+          })
+        );
+        setInfo({
+          ...info,
+          followedBy: info.followedBy.filter((i) => i.id !== user.id),
+        });
+      }
+    } catch (err) {
+      setFollowLoad(false);
+      console.log(err);
+    }
+  };
+
   if (load) {
     return <CircularIndeterminate />;
   }
@@ -108,8 +173,37 @@ const page = () => {
                   />
                 </div>
               </div>
-              <div className="w-full text-center mt-20">
-                <div className="flex justify-center lg:pt-4 pt-8 pb-0">
+
+              {user.id !== info.id ? (
+                <div className="mt-28">
+                  <button
+                    onClick={
+                      user.following.map((i) => i.id).includes(info.id)
+                        ? onUnfollow
+                        : onFollow
+                    }
+                  >
+                    <FollowButton>
+                      {followLoad ? (
+                        <CircularProgress size={"16px"} />
+                      ) : user.following.map((i) => i.id).includes(info.id) ? (
+                        "Unfollow"
+                      ) : (
+                        "Follow"
+                      )}
+                    </FollowButton>
+                  </button>
+                </div>
+              ) : (
+                <></>
+              )}
+
+              <div
+                className={`w-full text-center ${
+                  user.id === info.id ? "mt-28" : "mt-2"
+                }`}
+              >
+                <div className="flex justify-center lg:pt-4 pb-0">
                   <div className="p-3 text-center">
                     <span className="text-xl font-bold block uppercase tracking-wide text-white">
                       {info?.posts.length}

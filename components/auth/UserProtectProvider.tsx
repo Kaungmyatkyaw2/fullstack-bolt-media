@@ -13,24 +13,24 @@ const UserProtectProvider = ({ children }: PropType) => {
   const { data, status } = useSession();
   const route = useRouter();
   const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(true);
+  const loading = status === "loading";
   const path = usePathname();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      setIsLoading(false);
+    if (loading) return;
+
+    if (status !== "authenticated") {
       if (path !== "/register") {
         route.push("/login");
       }
     } else {
       if (status === "authenticated") {
-        setIsLoading(false);
         dispatch(insertUser({ ...data.user }));
       }
     }
-  }, [status, isLoading, data]);
+  }, [status, data, loading]);
 
-  if (isLoading) {
+  if (loading) {
     return <CircularIndeterminate />;
   }
 

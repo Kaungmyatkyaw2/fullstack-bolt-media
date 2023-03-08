@@ -20,6 +20,7 @@ const CommentCard = ({ com }: propType) => {
   const [disable, setDisable] = useState(false);
   const open = Boolean(anchorEl);
   const dispatch = useDispatch();
+  const user = useSelector((state:RootState) => state.user)
   const allTweets = useSelector((state: RootState) => state.tweet);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -77,7 +78,9 @@ const CommentCard = ({ com }: propType) => {
             {com.user.user_name}
           </h1>
 
-          <div>
+          {
+            user.id === com.user_id ?
+            <div>
             <Button
               id="basic-button"
               aria-controls={open ? "basic-menu" : undefined}
@@ -112,7 +115,8 @@ const CommentCard = ({ com }: propType) => {
                 {disable ? "Deleting" : "Delete"}
               </MenuItem>
             </Menu>
-          </div>
+          </div> : <></>
+          }
         </div>
 
         <p className="text-[13px] text-gray-300">{com.comment}</p>

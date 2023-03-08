@@ -12,6 +12,10 @@ export const authOptions: any = {
           where: {
             email: credentials.email,
           },
+          include: {
+            followedBy: true,
+            following: true,
+          },
         });
 
         if (!isUserExist) throw new Error("User Doesn't Exist");
@@ -30,11 +34,17 @@ export const authOptions: any = {
       const check = await prisma.user.findUnique({
         // @ts-ignore
         where: { email: session.user.email },
+        include: {
+          followedBy: true,
+          following: true,
+        },
       });
       session.user = {
         name: check?.user_name,
         email: check?.email,
         id: check?.id,
+        followedBy: check?.followedBy,
+        following: check?.following,
       };
       return session;
     },

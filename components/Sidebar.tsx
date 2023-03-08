@@ -28,8 +28,8 @@ const Sidebar = ({ isShow, offShow }: propType) => {
       await signOut();
       dispatch(logout());
       route.push("/login");
-    } catch {
-      console.log("ERROR");
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -83,8 +83,8 @@ const Sidebar = ({ isShow, offShow }: propType) => {
           <h1 className="text-[13px] font-bold text-gray-600">{user.email}</h1>
         </div>
         <div className="flex items-center space-x-[20px]">
-          <h1 className="text-[13px]">0 Followers</h1>
-          <h1 className="text-[13px]">0 Following</h1>
+          <h1 className="text-[13px]">{user.followedBy.length} Followers</h1>
+          <h1 className="text-[13px]">{user.following.length} Following</h1>
         </div>
       </div>
       <div className="py-[20px] space-y-[25px]">
