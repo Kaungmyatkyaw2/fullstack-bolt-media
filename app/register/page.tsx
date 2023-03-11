@@ -15,6 +15,7 @@ import { apiInstance } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { CircularProgress } from "@mui/material";
 import TextInput from "@/components/form/TextInput";
+import Header from "@/components/Header";
 
 function Copyright(props: any) {
   return (
@@ -68,49 +69,52 @@ export default function SignIn() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <Container component="main" maxWidth="xs">
-        <CssBaseline />
-        <Box
-          sx={{
-            marginTop: 8,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign Up
-          </Typography>
+    <>
+      <Header title="Register"></Header>
+      <ThemeProvider theme={theme}>
+        <Container component="main" maxWidth="xs">
+          <CssBaseline />
           <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ mt: 1 }}
+            sx={{
+              marginTop: 8,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
           >
-            <TextInput label={"User Name"} name="user_name" type="text" />
+            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
+              Sign Up
+            </Typography>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{ mt: 1 }}
+            >
+              <TextInput label={"User Name"} name="user_name" type="text" />
 
-            <TextInput label={"Email Address"} name="email" type="email" />
+              <TextInput label={"Email Address"} name="email" type="email" />
 
-            <TextInput label={"Password"} name="password" type="password" />
+              <TextInput label={"Password"} name="password" type="password" />
 
-            <button className="block w-full py-[10px] rounded-[5px] bg-primary text-white my-[15px] duration-200">
-              {isLoading ? <CircularProgress size="20px" /> : "Sign In"}
-            </button>
-            <Grid container>
-              <Grid item>
-                <Link href="/login" variant="body2">
-                  {"Already have an account? Sign In"}
-                </Link>
+              <button className="block w-full py-[10px] rounded-[5px] bg-primary text-white my-[15px] duration-200">
+                {isLoading ? <CircularProgress size="20px" /> : "Sign In"}
+              </button>
+              <Grid container>
+                <Grid item>
+                  <Link href="/login" variant="body2">
+                    {"Already have an account? Sign In"}
+                  </Link>
+                </Grid>
               </Grid>
-            </Grid>
+            </Box>
           </Box>
-        </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
-      </Container>
-    </ThemeProvider>
+          <Copyright sx={{ mt: 8, mb: 4 }} />
+        </Container>
+      </ThemeProvider>
+    </>
   );
 }

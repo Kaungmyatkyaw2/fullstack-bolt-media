@@ -25,6 +25,7 @@ import EditTweetForm from "../form/EditTweetForm";
 import { CircularProgress } from "@mui/material";
 import CommentCard from "./CommentCard";
 import { useRouter } from "next/navigation";
+import { deleteImage } from "@/functions/imageFunctions";
 
 interface propType {
   tweet: tweetType;
@@ -67,6 +68,16 @@ const TweetCard = ({
     // @ts-ignore
     try {
       setDisable(true);
+
+      if (tweet.image !== null && tweet.image.length) {
+        await deleteImage(tweet.image).catch((error) => {
+          setDisable(false);
+          setAnchorEl(null);
+          toast.error("An Error Occured While Deleting Image");
+          console.log(error.message);
+        });
+      }
+
       const { data } = await apiInstance.delete(`tweet/delete?id=${tweet.id}`);
 
       if (data.isOk) {
@@ -80,25 +91,6 @@ const TweetCard = ({
       setDisable(false);
       setAnchorEl(null);
       toast.error("An Error Occured", style);
-    }
-  };
-
-  const handleDelete = async () => {
-    setDisable(true);
-    if (tweet.image === null || !tweet.image.length) {
-      handleDeleteTweet();
-    } else {
-      const storageRef = ref(storage, tweet.image);
-      deleteObject(storageRef)
-        .then(() => {
-          handleDeleteTweet();
-        })
-        .catch((error) => {
-          setDisable(false);
-          setAnchorEl(null);
-          toast.error("An Error Occured While Deleting Image");
-          console.log(error.message);
-        });
     }
   };
 
@@ -242,7 +234,7 @@ const TweetCard = ({
                 <MenuItem
                   disabled={disable}
                   sx={{ fontSize: "13px" }}
-                  onClick={handleDelete}
+                  onClick={handleDeleteTweet}
                 >
                   {disable ? "Deleting" : "Delete"}
                 </MenuItem>

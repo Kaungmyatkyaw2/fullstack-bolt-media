@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import FollowButton from "@/components/btn/FollowButton";
 import { CircularProgress } from "@mui/material";
 import { insertUser } from "@/store/user_slice/UserSlicer";
+import Header from "@/components/Header";
 
 const page = () => {
   const [info, setInfo] = useState<userType>({} as userType);
@@ -149,6 +150,7 @@ const page = () => {
 
   return (
     <>
+      <Header title={info.user_name}></Header>
       <Navbar
         sidebarToggle={() => {
           setShowSideBar(true);

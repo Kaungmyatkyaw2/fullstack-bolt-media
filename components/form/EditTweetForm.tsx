@@ -4,8 +4,6 @@ import { FcImageFile } from "react-icons/fc";
 import profile from "./../../public/profile.svg";
 import { CircularProgress } from "@mui/material";
 import Image from "next/image";
-import { storage } from "../../lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { apiInstance } from "@/lib/axios";
@@ -23,7 +21,8 @@ interface propType {
 const EditTweetForm = ({ onClose, tweetData }: propType) => {
   const user = useSelector((state: RootState) => state.user);
   const [load, setLoad] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [previewName, setPreviewName] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>();
   const div = useRef<HTMLDivElement>(null!);
   const file = useRef<HTMLInputElement>(null!);
   const allTweets = useSelector((state: RootState) => state.tweet);
@@ -31,16 +30,26 @@ const EditTweetForm = ({ onClose, tweetData }: propType) => {
 
   const imgPreview = () => {
     if (file.current.files) {
-      setPreviewUrl(file.current.files[0].name);
+      setPreviewName(file.current.files[0].name);
+      setPreviewUrl(URL.createObjectURL(file.current.files[0]));
     }
   };
 
-  const updateTweet = async (url: string) => {
+  const updateTweet = async () => {
     try {
       const payload = {
         description: div.current.textContent,
-        image: url,
+        image: "",
       };
+
+      if (file.current.files?.length) {
+        payload.image = await uploadImage(
+          file.current.files[0],
+          previewName + Date.now()
+        );
+      } else if (tweetData.image !== null || tweetData.image) {
+        payload.image = tweetData.image;
+      }
 
       const { data } = await apiInstance.patch(
         `tweet/update?id=${tweetData.id}`,
@@ -65,24 +74,18 @@ const EditTweetForm = ({ onClose, tweetData }: propType) => {
     }
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     setLoad(true);
     if (file.current.files?.length !== 0 && file.current.files) {
-      const imageRef = ref(storage, `${previewUrl + Date.now()}`);
       if (tweetData.image !== null) {
         deleteImage(tweetData.image).then((_) => {
-          //@ts-ignore
-          uploadBytes(imageRef, file.current.files[0]).then((_) => {
-            getDownloadURL(imageRef).then((url) => updateTweet(url));
-          });
+          updateTweet();
         });
       } else {
-        uploadBytes(imageRef, file.current.files[0]).then((_) => {
-          getDownloadURL(imageRef).then((url) => updateTweet(url));
-        });
+        updateTweet();
       }
     } else {
-      updateTweet(tweetData.image !== null ? tweetData.image : "");
+      updateTweet();
     }
   };
 
@@ -126,7 +129,7 @@ const EditTweetForm = ({ onClose, tweetData }: propType) => {
               ></textarea>
               {tweetData.image !== null && tweetData.image.length && (
                 <img
-                  src={tweetData.image}
+                  src={previewUrl || tweetData.image}
                   className="w-full h-[200px] mb-[20px] object-cover"
                 />
               )}
@@ -138,7 +141,7 @@ const EditTweetForm = ({ onClose, tweetData }: propType) => {
                   className="hidden"
                 />
                 <h1 className="font-bold">
-                  {previewUrl.length ? previewUrl : "Chosse Another Photo"}
+                  {previewName.length ? previewName : "Chosse Another Photo"}
                 </h1>
                 <div>
                   <div onClick={() => file.current.click()}>
