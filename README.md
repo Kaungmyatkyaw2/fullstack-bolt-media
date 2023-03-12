@@ -1,7 +1,7 @@
 
 # I named this project "Bolt" 🚀 
 
-This is a project make by REACT and Firebase v9.✨
+This is a project make by Next.js and Postgresql.✨
 
 ## What can we do ? 🚀
 
